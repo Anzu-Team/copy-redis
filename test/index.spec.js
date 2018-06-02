@@ -80,4 +80,13 @@ limited to batches of 10 async calls by default.", function(done) {
       });
     });
   });
+  describe('executeCopy function', function() {
+    it('should copy keys between instances.', function(done) {
+      module.executeCopy(module.config, (err, result) => {
+        debug(err, result);
+        done()
+      })
+    });
+
+  });
 });

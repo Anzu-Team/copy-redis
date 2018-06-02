@@ -28,11 +28,17 @@ function copyKey(sourceClient, targetClient, dbIndex, key, next) {
           if (gErr) {
             next(gErr);
           } else {
-            targetClient[setFnkName](key, gRes, (sErr, sRes) => {
-              if (sErr) {
-                next(sErr)
+            targetClient.select(dbIndex, (tErr,tSelRes) => {
+              if (tErr) {
+                next(tErr)
               } else {
-                next(null,[key, gRes, sRes])
+                targetClient[setFnkName](key, gRes, (sErr, sRes) => {
+                  if (sErr) {
+                    next(sErr)
+                  } else {
+                    next(null,[key, gRes, sRes])
+                  }
+                });
               }
             });
           }
@@ -107,9 +113,13 @@ function getFilledDbs(client, next) {
 }
 function executeCopy(options, next) {
   if (options.source) {
-    const client = connect(options.source);
-    getFilledDbs(client, (err, result) => {
-      next(err, result);
+    const sourceClient = connect(options.source);
+    const targetClient = connect(options.target);
+    getFilledDbs(sourceClient, (err, dbs) => {
+      async.mapSeries(dbs, (dbIndex,clbk) => {
+        debug(dbIndex)
+        copyDb(sourceClient, targetClient,dbIndex, clbk);
+      }, next)
     });
   } else {
     throw new Error("Redis source connection options are not defined");
