@@ -1,18 +1,33 @@
 import { expect } from "chai";
 const module = require("../index");
 const debug = require("debug")("copy-redis-test");
+const async = require("async");
+const SP = '_';
 
 describe("copy-redis module", function() {
   before((done) => {
       const source_client = module.connect(module.config.source);
       source_client.select(0,(e1,r1) => {
-        source_client.set('copy-redis-test', 1, (e2, r2) => {
+        async.mapSeries([...Array(5).keys()],function (indx,clbk) {
+          debug(indx);
+          let key = 'copy-redis-test' + SP + indx;
+          source_client.set(key, indx, (e1, r1) => {
+            clbk(null, [indx,key,indx,e1,r1]);
+          });
+        }, (err, res0) => {
           source_client.select(5,(e1,r1) => {
-            source_client.set('copy-redis-test', 1, (e2, r2) => {
+            async.mapSeries([...Array(5).keys()],function (indx,clbk) {
+              debug(indx);
+              let key = 'copy-redis-test' + SP + indx;
+              source_client.set(key, indx, (e1, r1) => {
+                clbk(null, [indx,key,indx,e1,r1]);
+              });
+            }, (err, res5) => {
+              debug(err,[res0,res5]);
               done();
-            });
+            })
           })
-        });
+        })
       })
   })
   it("should return object", function() {
@@ -54,16 +69,15 @@ describe("copy-redis module", function() {
   });
   describe("copyDb function", function() {
     it("should return err or result of copy operation between redis servers, \
-limited to batches of 10 async calls by default.\
-copy is made using DUMP and RESTORE operations. Thou on RESTORE ttl is set to 0 by default.\
-If last passed parameter is `true`, key will be deleted before RESTORE is executed on target client, in order to avoid BUSYKEY Redis error.", function(done) {
+limited to batches of 10 async calls by default.", function(done) {
       const source_client = module.connect(module.config.source);
       const target_client = module.connect(module.config.target);
       const dbIndex = 0;
       module.copyDb(source_client, target_client, dbIndex, (err, result) => {
-        expect(result).to.be.an.instanceOf(Object);
+        expect(result).to.be.an("array");
         expect(err).to.be.null;
-      }, 10, true);
+        done()
+      });
     });
   });
 });
