@@ -28,7 +28,13 @@ function copyKey(sourceClient, targetClient, dbIndex, key, next) {
           if (gErr) {
             next(gErr);
           } else {
-            targetClient[setFnkName](key, gRes, next);
+            targetClient[setFnkName](key, gRes, (sErr, sRes) => {
+              if (sErr) {
+                next(sErr)
+              } else {
+                next(null,[key, gRes, sRes])
+              }
+            });
           }
         });
       }
