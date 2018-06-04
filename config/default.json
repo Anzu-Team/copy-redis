@@ -7,6 +7,6 @@
         "target": {
                         "host":"localhost",
                         "port" : "6390",
-                        "password" : "xxx"
+                        "password" : "foobaredd"
         }
 }

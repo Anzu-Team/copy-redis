@@ -111,16 +111,39 @@ function getFilledDbs(client, next) {
     next(err, dbsList);
   });
 }
+
+/**
+ * executeCopy, will halt if any of key values failed to be copied.
+ * db copy is executed using `async.series` methodology.
+ * While `copyKey` is executed as parallel `async` calls limited to 10 keys, by default.
+ * throws if options are not defined.
+ *
+ * @param options
+ * @param next
+ * @returns {Array}
+ */
+
 function executeCopy(options, next) {
   if (options.source) {
     const sourceClient = connect(options.source);
     const targetClient = connect(options.target);
-    getFilledDbs(sourceClient, (err, dbs) => {
-      async.mapSeries(dbs, (dbIndex,clbk) => {
-        debug(dbIndex)
-        copyDb(sourceClient, targetClient,dbIndex, clbk);
-      }, next)
-    });
+    if (options.dbs) {
+      if (typeof options.dbs == 'array') {
+        async.mapSeries(options.dbs, (dbIndex,clbk) => {
+          debug(dbIndex)
+          copyDb(sourceClient, targetClient,dbIndex, clbk);
+        }, next)
+      } else {
+        throw new Error("Passed db ist through `options.dbs` is not based on JS array date type");
+      }
+    } else {
+      getFilledDbs(sourceClient, (err, dbs) => {
+        async.mapSeries(dbs, (dbIndex,clbk) => {
+          debug(dbIndex)
+          copyDb(sourceClient, targetClient,dbIndex, clbk);
+        }, next)
+      });
+    }
   } else {
     throw new Error("Redis source connection options are not defined");
   }
