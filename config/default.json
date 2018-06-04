@@ -1,0 +1,12 @@
+{
+        "source": {
+                        "host":"localhost",
+                        "port" : "6379",
+                        "password" : "xxx"
+        },
+        "target": {
+                        "host":"localhost",
+                        "port" : "6390",
+                        "password" : "foobaredd"
+        }
+}
