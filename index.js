@@ -17,6 +17,7 @@ function type(client, key, next) {
   client.type(key, next);
 }
 function copyKey(sourceClient, targetClient, dbIndex, key, next) {
+  debug("copy key " + key + " of db"+dbIndex)
   type(sourceClient, key, (err, type) => {
     let getFnkName = types[type][0];
     let setFnkName = types[type][1];
@@ -108,6 +109,7 @@ function getFilledDbs(client, next) {
         });
       }
     }
+    debug("Found following dbs as filled", dbsList)
     next(err, dbsList);
   });
 }

@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "$(npm bin)/mocha --exit"
+    "test": "$(npm bin)/mocha --exit",
+    "copy": "DEBUG=copy-redis* node exec-copy.js"
   },
   "dependencies": {
     "async": "^2.6.1",
